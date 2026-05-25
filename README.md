@@ -1,4 +1,4 @@
-# ⚽🃏 Simulación Monte Carlo: Álbum de Figuritas (Laboratorio 7)
+# ⚽🃏 Simulación Monte Carlo: Álbum de Figuritas (Laboratorios 7 y 8)
 
 **MM3014 · Teoría de Probabilidades | Universidad del Valle de Guatemala (UVG)**  
 **Integrantes:**  
@@ -9,12 +9,20 @@
 
 ## 📝 Descripción del Proyecto
 
-Este repositorio contiene la implementación y el análisis de una **Simulación de Monte Carlo** para modelar el proceso de completar un álbum de figuritas coleccionables. El estudio se divide en dos etapas principales y está disponible tanto en formato interactivo (**Jupyter Notebook**: `lab7.ipynb`) como en un script de Python ejecutable (**Script**: `lab7.py`).
+Este repositorio contiene la implementación y el análisis de una **Simulación de Monte Carlo** para modelar el proceso de completar un álbum de figuritas coleccionables. El estudio se divide en **tres etapas** distribuidas en dos laboratorios, y está disponible tanto en formato interactivo (**Jupyter Notebook**) como en script de Python ejecutable (**Script**).
 
 ### Parámetros del Problema
 * **$N = 100$**: Total de figuritas distintas que componen el álbum.
 * **$S = 7$**: Figuritas por sobre. Es muy importante destacar que las figuritas dentro de un mismo sobre son **únicas** (muestreo sin reemplazo al abrir un sobre).
 * **$R = 10,000$**: Número de simulaciones independientes realizadas para asegurar la convergencia estadística (Estabilidad de Monte Carlo).
+* **Precio por sobre (Etapa 3):** Q 9.50
+* **Presupuesto total (Etapa 3):** Q 1 000
+
+| Laboratorio | Etapas | Archivos |
+| :---: | :--- | :--- |
+| **Lab 7** | Etapa 1 — Distribución del nº de sobres | `Lab 7/lab7.py`, `Lab 7/lab7.ipynb` |
+| **Lab 7** | Etapa 2 — Probabilidad en función del nº de sobres | `Lab 7/lab7.py`, `Lab 7/lab7.ipynb` |
+| **Lab 8** | Etapa 3 — Incorporación del presupuesto y costo | `Lab 8/lab8.py`, `Lab 8/lab8.ipynb` |
 
 ---
 
@@ -104,6 +112,69 @@ Para un presupuesto de **$M = 50$** sobres:
 
 ---
 
+## 💰 Etapa 3 — Incorporación del Presupuesto y Costo (Lab 8)
+
+En la Etapa 3 se agrega una restricción económica realista: cada sobre cuesta **Q 9.50** y el coleccionista cuenta con un presupuesto de **Q 1 000**. La simulación compra sobres mientras quede presupuesto y el álbum no esté completo.
+
+### 📊 Resultados de la Simulación (Etapa 3)
+
+| Métrica | Valor |
+| :--- | :---: |
+| **P(completar álbum con Q 1 000)** | **0.9488 (94.88%)** |
+| Sobres esperados comprados (todas las sims.) | 71.61 |
+| Estampas distintas esperadas en sims. fallidas | 98.96 |
+| Simulaciones exitosas | 9 488 / 10 000 |
+| Simulaciones fallidas | 512 / 10 000 |
+
+> [!NOTE]
+> La media de ~72 sobres es muy inferior al límite de 105 sobres comprables: la mayoría de los coleccionistas completa el álbum sin agotar el presupuesto. Las simulaciones fallidas quedan con ~99/100 estampas — les falta **apenas una** en promedio.
+
+### 📈 Gráfica: Completó vs No Completó (`proporcion_completar_budget.png`)
+
+Diagrama de barras que muestra la proporción de simulaciones en que se completó el álbum frente a las que se agotó el presupuesto antes de completarlo.
+
+---
+
+## 🔍 Análisis Profundo (Etapa 3)
+
+### Pregunta 1 — ¿Los 105 sobres comprables alcanzan el mínimo teórico sin repetidos?
+
+$$\text{Máximo comprables} = \left\lfloor \frac{Q\,1000}{Q\,9.50} \right\rfloor = 105 \text{ sobres}$$
+
+$$\text{Mínimo teórico} = \left\lceil \frac{N}{S} \right\rceil = \left\lceil \frac{100}{7} \right\rceil = 15 \text{ sobres}$$
+
+**Respuesta: SÍ** ($105 \ge 15$, con 90 sobres de holgura). El presupuesto es más que suficiente para el caso ideal. En la práctica, sin embargo, siempre hay repeticiones y la media de sobres necesarios es ~72.
+
+---
+
+### Pregunta 2 — Caja de 104 sobres (Q 975) vs sobres sueltos
+
+La caja tiene un precio unitario de $Q\,975/104 \approx Q\,9.375$, más barato que el suelto ($Q\,9.50$). Con el mismo presupuesto de Q 975 en sueltos solo se obtienen $\lfloor 975/9.50 \rfloor = 102$ sobres.
+
+| Modalidad | Sobres | Gasto | P(completar) |
+| :--- | :---: | :---: | :---: |
+| Sueltos con Q 975 (mismo presupuesto) | 102 | Q 969.00 | **0.9378** |
+| **Caja de 104 sobres** | **104** | **Q 975.00** | **0.9468** |
+| Sueltos con Q 1 000 (presupuesto completo) | 105 | Q 997.50 | 0.9488 |
+
+La caja entrega **2 sobres más** con el mismo presupuesto y supera a los sueltos equivalentes en **+0.90 p.p.**
+
+---
+
+### Pregunta 3 — Estrategia mixta óptima dentro de Q 1 000
+
+| Estrategia | Sobres | Gasto | P(completar) |
+| :--- | :---: | :---: | :---: |
+| Solo sueltos | 105 | Q 997.50 | 0.9488 |
+| Solo caja | 104 | Q 975.00 | 0.9468 |
+| **Caja + 2 sueltos ★** | **106** | **Q 994.00** | **0.9544** |
+
+#### Mejor estrategia: 1 caja (104 sobres, Q 975) + 2 sobres sueltos (Q 19) = Q 994
+
+La caja ahorra Q 13 frente a 104 sueltos. Esos Q 13 más Q 2.50 de vuelto de la estrategia de sueltos puros financian **2 sobres extra** (total: 106 sobres), logrando la mayor probabilidad de completar el álbum con **+0.56 p.p.** sobre solo sueltos, ahorrando además Q 3.50.
+
+---
+
 ## 🚀 Cómo Ejecutar el Proyecto
 
 ### Clonar el repositorio
@@ -122,15 +193,32 @@ Asegúrate de tener instalado Python y las bibliotecas necesarias:
 pip install numpy matplotlib
 ```
 
-### Opción 1: Ejecutar el Script interactivo (Jupyter Notebook)
-Abre el notebook para visualizar de forma interactiva la ejecución celda por celda y la generación dinámica de gráficos:
+### Lab 7 — Etapas 1 y 2
+
+#### Lab 7 · Jupyter Notebook (interactivo)
+
 ```bash
-jupyter notebook lab7.ipynb
+jupyter notebook "Lab 7/lab7.ipynb"
 ```
 
-### Opción 2: Ejecutar el Script de Consola (Python)
-Para realizar la simulación y guardar las gráficas en formato `.png` de forma directa, ejecuta el archivo de Python:
+#### Lab 7 · Script de consola
+
 ```bash
-python lab7.py
+python "Lab 7/lab7.py"
 ```
-El script imprimirá el análisis detallado y las respuestas a las preguntas directamente en la consola, y actualizará las imágenes en el directorio de trabajo.
+
+### Lab 8 — Etapa 3
+
+#### Lab 8 · Jupyter Notebook (interactivo)
+
+```bash
+jupyter notebook "Lab 8/lab8.ipynb"
+```
+
+#### Lab 8 · Script de consola
+
+```bash
+python "Lab 8/lab8.py"
+```
+
+El script imprimirá el análisis detallado y las respuestas a las preguntas directamente en la consola, y guardará el gráfico `proporcion_completar_budget.png` en el directorio de trabajo.
