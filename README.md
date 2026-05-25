@@ -196,8 +196,8 @@ En la Etapa 4 se introduce un mecanismo de intercambio: cada $K$ estampas repeti
 > La disminución de K reduce drásticamente el número medio de sobres necesarios. La mejora no es lineal: pasar de $K=10$ a $K=5$ ofrece una mejora importante, pero los saltos hacia $K=2$ y $K=1$ presentan ganancias masivas.
 
 ### Gráfica Distribución de sobres necesarios para completar el álbum (`hist_intercambio.png`)
-<img width="1050" height="900" alt="image" src="https://github.com/user-attachments/assets/66fcf8a4-3c0a-4645-9f1f-e84d0a5a5317" />
 
+<img width="1500" height="900" alt="image" src="https://github.com/user-attachments/assets/91f08ac7-d203-4014-a95b-89c28cb72813" />
 
 ### 📈 Parte B: Probabilidad en función de M sobres
 
