@@ -131,6 +131,8 @@ En la Etapa 3 se agrega una restricción económica realista: cada sobre cuesta 
 > La media de ~72 sobres es muy inferior al límite de 105 sobres comprables: la mayoría de los coleccionistas completa el álbum sin agotar el presupuesto. Las simulaciones fallidas quedan con ~99/100 estampas — les falta **apenas una** en promedio.
 
 ### 📈 Gráfica: Completó vs No Completó (`proporcion_completar_budget.png`)
+<img width="1050" height="900" alt="image" src="https://github.com/user-attachments/assets/fc4b6128-6e7e-4068-a547-cb0a4c9b2840" />
+
 
 Diagrama de barras que muestra la proporción de simulaciones en que se completó el álbum frente a las que se agotó el presupuesto antes de completarlo.
 
@@ -193,6 +195,10 @@ En la Etapa 4 se introduce un mecanismo de intercambio: cada $K$ estampas repeti
 > [!NOTE]
 > La disminución de K reduce drásticamente el número medio de sobres necesarios. La mejora no es lineal: pasar de $K=10$ a $K=5$ ofrece una mejora importante, pero los saltos hacia $K=2$ y $K=1$ presentan ganancias masivas.
 
+### Gráfica Distribución de sobres necesarios para completar el álbum (`hist_intercambio.png`)
+<img width="1050" height="900" alt="image" src="https://github.com/user-attachments/assets/66fcf8a4-3c0a-4645-9f1f-e84d0a5a5317" />
+
+
 ### 📈 Parte B: Probabilidad en función de M sobres
 
 Se evaluaron secuencias fijas de $M$ sobres ($20, 25, 30, \dots, 70$) para determinar los puntos donde se alcanzan ciertas probabilidades clave:
@@ -204,6 +210,9 @@ Se evaluaron secuencias fijas de $M$ sobres ($20, 25, 30, \dots, 70$) para deter
 | **K = 5** | 30 | 30 | 30 |
 | **K = 2** | 20 | 20 | 20 |
 | **K = 1** | 20 | 20 | 20 |
+
+### Gráfica Probabilidad de completar el álbum vs sobres comprados (`prob_vs_M_intercambio.png`)
+<img width="1500" height="900" alt="image" src="https://github.com/user-attachments/assets/e61878c0-1400-4346-b87a-3f5a1e6e3e0d" />
 
 ---
 
