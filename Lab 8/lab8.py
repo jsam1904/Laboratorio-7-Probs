@@ -214,3 +214,216 @@ print()
 print(f"  Ganancia vs solo sueltos:  {prob_mixed - prob_complete:+.4f}  ({(prob_mixed - prob_complete)*100:+.2f}p.p.)")
 print(f"  Ganancia vs solo caja:     {prob_mixed - prob_box:+.4f}  ({(prob_mixed - prob_box)*100:+.2f}p.p.)")
 print(f"  Dinero ahorrado vs sueltos: Q{max_packs_possible * PRICE - mixed_cost:.2f}")
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# ETAPA 4 — Efecto del intercambio de repetidas
+# ═══════════════════════════════════════════════════════════════════════════════
+
+print("\n" + "=" * 65)
+print("ETAPA 4: EFECTO DEL INTERCAMBIO DE REPETIDAS")
+print("=" * 65)
+
+np.random.seed(SEED)
+K_values = [None, 1, 2, 5, 10]
+M_values_b = [20, 25, 30, 35, 40, 45, 50, 55, 60, 65, 70]
+
+def simulate_exchange_until_complete(K):
+    """
+    Simula la compra de sobres hasta completar el álbum, aplicando el canje
+    de K estampas repetidas por 1 faltante (si K is not None).
+    """
+    collected = set()
+    repeated_count = 0
+    packs = 0
+    
+    while len(collected) < N:
+        pack = np.random.choice(N, S, replace=False)
+        packs += 1
+        for sticker in pack:
+            if sticker in collected:
+                repeated_count += 1
+            else:
+                collected.add(sticker)
+        
+        # Proceso de canje al final del sobre
+        if K is not None:
+            while repeated_count >= K and len(collected) < N:
+                repeated_count -= K
+                missing = list(set(range(N)) - collected)
+                if missing:
+                    new_sticker = np.random.choice(missing)
+                    collected.add(new_sticker)
+                    
+    return packs
+
+def simulate_exchange_fixed_packs(K, fixed_M):
+    """
+    Simula la compra de un número exacto de sobres, aplicando el canje
+    de K estampas repetidas por 1 faltante (si K is not None).
+    Devuelve True si completa el álbum, False en caso contrario.
+    """
+    collected = set()
+    repeated_count = 0
+    
+    for _ in range(fixed_M):
+        pack = np.random.choice(N, S, replace=False)
+        for sticker in pack:
+            if sticker in collected:
+                repeated_count += 1
+            else:
+                collected.add(sticker)
+                
+        if K is not None:
+            while repeated_count >= K and len(collected) < N:
+                repeated_count -= K
+                missing = list(set(range(N)) - collected)
+                if missing:
+                    new_sticker = np.random.choice(missing)
+                    collected.add(new_sticker)
+                    
+        if len(collected) == N:
+            return True
+            
+    return len(collected) == N
+
+# ── Parte A: Simulación hasta completar ───────────────────────────────────────
+print("\nParte A: Simulación hasta completar el álbum")
+print("-" * 65)
+
+results_A = {}
+mean_no_exchange = None
+
+for K in K_values:
+    np.random.seed(SEED) # Reset para comparar con la misma secuencia base
+    packs_needed = [simulate_exchange_until_complete(K) for _ in range(R)]
+    mean_p = np.mean(packs_needed)
+    std_p = np.std(packs_needed)
+    
+    if K is None:
+        mean_no_exchange = mean_p
+        results_A['Sin intercambio'] = packs_needed
+        print(f"  Sin intercambio: Media = {mean_p:.2f}, Desv = {std_p:.2f}")
+    else:
+        reduction = (1 - (mean_p / mean_no_exchange)) * 100
+        results_A[f'K={K}'] = packs_needed
+        print(f"  K={K}: Media = {mean_p:.2f}, Desv = {std_p:.2f} (Reducción: {reduction:.2f}%)")
+
+# Visualización Parte A
+fig, ax = plt.subplots(figsize=(10, 6))
+colors = ['gray', 'green', 'blue', 'orange', 'red']
+for (label, data), color in zip(results_A.items(), colors):
+    ax.hist(data, bins=range(min(data), max(data)+2), alpha=0.5, label=f'{label} (Media: {np.mean(data):.1f})', color=color, density=True)
+ax.set_title(f'Distribución de sobres necesarios para completar el álbum (N={N}, S={S})')
+ax.set_xlabel('Sobres')
+ax.set_ylabel('Densidad')
+ax.legend()
+plt.tight_layout()
+plt.savefig('hist_intercambio.png', dpi=150)
+plt.show()
+print("  [Gráfico guardado: hist_intercambio.png]")
+
+# ── Parte B: Probabilidad de éxito en función de M ────────────────────────────
+print("\nParte B: Probabilidad de éxito en función de M sobres")
+print("-" * 65)
+
+results_B = {K: [] for K in K_values}
+
+for K in K_values:
+    print(f"  Simulando para {'Sin intercambio' if K is None else f'K={K}'}...")
+    for M in M_values_b:
+        np.random.seed(SEED + M) # Asegurar variabilidad entre Ms
+        successes = sum(simulate_exchange_fixed_packs(K, M) for _ in range(R))
+        prob = successes / R
+        results_B[K].append(prob)
+
+def find_M_for_prob(probs, M_vals, target):
+    for m, p in zip(M_vals, probs):
+        if p >= target:
+            return m
+    return ">" + str(max(M_vals))
+
+print("\n  Sobres necesarios para alcanzar probabilidad:")
+print(f"  {'Config':<18} | {'50%':<5} | {'75%':<5} | {'90%':<5}")
+print(f"  {'-'*18}-+-{'-'*5}-+-{'-'*5}-+-{'-'*5}")
+for K in K_values:
+    label = 'Sin intercambio' if K is None else f'K={K}'
+    probs = results_B[K]
+    m50 = find_M_for_prob(probs, M_values_b, 0.50)
+    m75 = find_M_for_prob(probs, M_values_b, 0.75)
+    m90 = find_M_for_prob(probs, M_values_b, 0.90)
+    print(f"  {label:<18} | {str(m50):<5} | {str(m75):<5} | {str(m90):<5}")
+
+# Visualización Parte B
+fig, ax = plt.subplots(figsize=(10, 6))
+for (K, probs), color in zip(results_B.items(), colors):
+    label = 'Sin intercambio' if K is None else f'K={K}'
+    ax.plot(M_values_b, probs, marker='o', color=color, label=label, linewidth=2)
+ax.axhline(0.5, color='gray', linestyle='--', alpha=0.5)
+ax.axhline(0.75, color='gray', linestyle='--', alpha=0.5)
+ax.axhline(0.9, color='gray', linestyle='--', alpha=0.5)
+ax.set_title('Probabilidad de completar el álbum vs Sobres comprados')
+ax.set_xlabel('Sobres (M)')
+ax.set_ylabel('Probabilidad')
+ax.set_ylim(0, 1.05)
+ax.legend()
+plt.tight_layout()
+plt.savefig('prob_vs_M_intercambio.png', dpi=150)
+plt.show()
+print("\n  [Gráfico guardado: prob_vs_M_intercambio.png]")
+
+# ── Preguntas de Análisis (Etapa 4) ──────────────────────────────────────────
+print("\n" + "=" * 65)
+print("PREGUNTAS DE ANÁLISIS — ETAPA 4")
+print("=" * 65)
+
+# 1. 
+print("\nPregunta 1: ¿Cómo afecta la disminución de K al número esperado de sobres y a la probabilidad de éxito? ¿Es lineal la relación?")
+print("-" * 65)
+print("Respuesta:")
+print("La disminución de K (es decir, una tasa de intercambio más favorable) reduce drásticamente el número medio")
+print("de sobres necesarios y desplaza la curva de probabilidad hacia la izquierda (se alcanza el éxito con menos sobres).")
+print("La relación NO es lineal. Como se observa en la reducción porcentual (Parte A), pasar de Sin Intercambio a K=10")
+print("produce un ahorro moderado, pero los saltos de K=10 a K=5, y sobre todo a K=2 y K=1, presentan mejoras mucho")
+print("más aceleradas, mostrando rendimientos decrecientes cuando K es alto, y ganancias masivas cuando K se acerca a 1.")
+
+# 2.
+print("\nPregunta 2: Para K = 2, ¿cuántos sobres se ahorran en promedio respecto al caso sin intercambio? Exprese en Q.")
+print("-" * 65)
+ahorro_sobres_K2 = np.mean(results_A['Sin intercambio']) - np.mean(results_A['K=2'])
+ahorro_quetzales_K2 = ahorro_sobres_K2 * PRICE
+print("Respuesta:")
+print(f"Sobres ahorrados en promedio: {ahorro_sobres_K2:.2f} sobres.")
+print(f"Ahorro monetario (a Q{PRICE} por sobre): Q{ahorro_quetzales_K2:.2f}")
+
+# 3.
+print("\nPregunta 3: Para M=45, ¿cuánto aumenta la probabilidad al pasar de K=10 a K=5, y de K=5 a K=1?")
+print("-" * 65)
+idx_45 = M_values_b.index(45)
+prob_k10_45 = results_B[10][idx_45]
+prob_k5_45 = results_B[5][idx_45]
+prob_k1_45 = results_B[1][idx_45]
+print("Respuesta:")
+print(f"Aumento de K=10 (P={prob_k10_45:.4f}) a K=5 (P={prob_k5_45:.4f}): +{prob_k5_45 - prob_k10_45:.4f} ({(prob_k5_45 - prob_k10_45)*100:.2f}%)")
+print(f"Aumento de K=5 (P={prob_k5_45:.4f}) a K=1 (P={prob_k1_45:.4f}): +{prob_k1_45 - prob_k5_45:.4f} ({(prob_k1_45 - prob_k5_45)*100:.2f}%)")
+
+# 4.
+print("\nPregunta 4: ¿Existe un valor de K a partir del cual mejorar la tasa produce muy poco beneficio adicional?")
+print("-" * 65)
+print("Respuesta:")
+print("Sí. Observando los resultados, los valores de K más altos (por ejemplo, K mayores a 10) ofrecen beneficios")
+print("marginales muy reducidos en comparación con valores cercanos a 1. La razón es que con una tasa de cambio")
+print("exigente, necesitas acumular demasiadas repetidas para conseguir 1 faltante. Como el número total de")
+print("figuritas que coleccionas es pequeño comparado con ese umbral, la mayoría de las figuritas repetidas")
+print("nunca se llegan a canjear y el efecto sobre la distribución se diluye fuertemente.")
+
+# 5.
+print("\nPregunta 5: Costo efectivo por estampa nueva obtenida mediante canje y tasa más rentable.")
+print("-" * 65)
+print("Respuesta:")
+print("Las estampas repetidas provienen de sobres ya pagados. Si consideramos los sobres como un 'costo hundido',")
+print("el costo efectivo adicional del canje es Q0.00. Sin embargo, en términos de 'costo de oportunidad',")
+print("para obtener 1 estampa nueva se requirieron K repetidas, que vinieron de sobres cuyo costo es Q9.50/7 = Q1.36 c/u.")
+print("Por lo tanto, la inversión indirecta por cada estampa canjeada es de K * (9.50 / 7) Quetzales.")
+print(f"Para K=2: 2 * 1.36 = Q2.71. Para K=10: 10 * 1.36 = Q13.57.")
+print("Si se pudiera elegir, la tasa más rentable es K=1, ya que transforma cada repetida inútil directamente")
+print("en una estampa útil con un costo de oportunidad mínimo.")
