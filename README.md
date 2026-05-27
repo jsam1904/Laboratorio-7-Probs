@@ -1,4 +1,4 @@
-# ⚽🃏 Simulación Monte Carlo: Álbum de Figuritas (Laboratorio 7)
+# ⚽🃏 Simulación Monte Carlo: Álbum de Figuritas (Laboratorios 7 y 8)
 
 **MM3014 · Teoría de Probabilidades | Universidad del Valle de Guatemala (UVG)**  
 **Integrantes:**  
@@ -9,12 +9,21 @@
 
 ## 📝 Descripción del Proyecto
 
-Este repositorio contiene la implementación y el análisis de una **Simulación de Monte Carlo** para modelar el proceso de completar un álbum de figuritas coleccionables. El estudio se divide en dos etapas principales y está disponible tanto en formato interactivo (**Jupyter Notebook**: `lab7.ipynb`) como en un script de Python ejecutable (**Script**: `lab7.py`).
+Este repositorio contiene la implementación y el análisis de una **Simulación de Monte Carlo** para modelar el proceso de completar un álbum de figuritas coleccionables. El estudio se divide en **tres etapas** distribuidas en dos laboratorios, y está disponible tanto en formato interactivo (**Jupyter Notebook**) como en script de Python ejecutable (**Script**).
 
 ### Parámetros del Problema
 * **$N = 100$**: Total de figuritas distintas que componen el álbum.
 * **$S = 7$**: Figuritas por sobre. Es muy importante destacar que las figuritas dentro de un mismo sobre son **únicas** (muestreo sin reemplazo al abrir un sobre).
 * **$R = 10,000$**: Número de simulaciones independientes realizadas para asegurar la convergencia estadística (Estabilidad de Monte Carlo).
+* **Precio por sobre (Etapa 3):** Q 9.50
+* **Presupuesto total (Etapa 3):** Q 1 000
+
+| Laboratorio | Etapas | Archivos |
+| :---: | :--- | :--- |
+| **Lab 7** | Etapa 1 — Distribución del nº de sobres | `Lab 7/lab7.py`, `Lab 7/lab7.ipynb` |
+| **Lab 7** | Etapa 2 — Probabilidad en función del nº de sobres | `Lab 7/lab7.py`, `Lab 7/lab7.ipynb` |
+| **Lab 8** | Etapa 3 — Incorporación del presupuesto y costo | `Lab 8/lab8.py`, `Lab 8/lab8.ipynb` |
+| **Lab 8** | Etapa 4 — Efecto del intercambio de repetidas | `Lab 8/lab8.py`, `Lab 8/lab8.ipynb` |
 
 ---
 
@@ -104,16 +113,133 @@ Para un presupuesto de **$M = 50$** sobres:
 
 ---
 
+## 💰 Etapa 3 — Incorporación del Presupuesto y Costo (Lab 8)
+
+En la Etapa 3 se agrega una restricción económica realista: cada sobre cuesta **Q 9.50** y el coleccionista cuenta con un presupuesto de **Q 1 000**. La simulación compra sobres mientras quede presupuesto y el álbum no esté completo.
+
+### 📊 Resultados de la Simulación (Etapa 3)
+
+| Métrica | Valor |
+| :--- | :---: |
+| **P(completar álbum con Q 1 000)** | **0.9488 (94.88%)** |
+| Sobres esperados comprados (todas las sims.) | 71.61 |
+| Estampas distintas esperadas en sims. fallidas | 98.96 |
+| Simulaciones exitosas | 9 488 / 10 000 |
+| Simulaciones fallidas | 512 / 10 000 |
+
+> [!NOTE]
+> La media de ~72 sobres es muy inferior al límite de 105 sobres comprables: la mayoría de los coleccionistas completa el álbum sin agotar el presupuesto. Las simulaciones fallidas quedan con ~99/100 estampas — les falta **apenas una** en promedio.
+
+### 📈 Gráfica: Completó vs No Completó (`proporcion_completar_budget.png`)
+<img width="1050" height="900" alt="image" src="https://github.com/user-attachments/assets/fc4b6128-6e7e-4068-a547-cb0a4c9b2840" />
+
+
+Diagrama de barras que muestra la proporción de simulaciones en que se completó el álbum frente a las que se agotó el presupuesto antes de completarlo.
+
+---
+
+## 🔍 Análisis Profundo (Etapa 3)
+
+### Pregunta 1 — ¿Los 105 sobres comprables alcanzan el mínimo teórico sin repetidos?
+
+$$\text{Máximo comprables} = \left\lfloor \frac{Q\,1000}{Q\,9.50} \right\rfloor = 105 \text{ sobres}$$
+
+$$\text{Mínimo teórico} = \left\lceil \frac{N}{S} \right\rceil = \left\lceil \frac{100}{7} \right\rceil = 15 \text{ sobres}$$
+
+**Respuesta: SÍ** ($105 \ge 15$, con 90 sobres de holgura). El presupuesto es más que suficiente para el caso ideal. En la práctica, sin embargo, siempre hay repeticiones y la media de sobres necesarios es ~72.
+
+---
+
+### Pregunta 2 — Caja de 104 sobres (Q 975) vs sobres sueltos
+
+La caja tiene un precio unitario de $Q\,975/104 \approx Q\,9.375$, más barato que el suelto ($Q\,9.50$). Con el mismo presupuesto de Q 975 en sueltos solo se obtienen $\lfloor 975/9.50 \rfloor = 102$ sobres.
+
+| Modalidad | Sobres | Gasto | P(completar) |
+| :--- | :---: | :---: | :---: |
+| Sueltos con Q 975 (mismo presupuesto) | 102 | Q 969.00 | **0.9378** |
+| **Caja de 104 sobres** | **104** | **Q 975.00** | **0.9468** |
+| Sueltos con Q 1 000 (presupuesto completo) | 105 | Q 997.50 | 0.9488 |
+
+La caja entrega **2 sobres más** con el mismo presupuesto y supera a los sueltos equivalentes en **+0.90 p.p.**
+
+---
+
+### Pregunta 3 — Estrategia mixta óptima dentro de Q 1 000
+
+| Estrategia | Sobres | Gasto | P(completar) |
+| :--- | :---: | :---: | :---: |
+| Solo sueltos | 105 | Q 997.50 | 0.9488 |
+| Solo caja | 104 | Q 975.00 | 0.9468 |
+| **Caja + 2 sueltos ★** | **106** | **Q 994.00** | **0.9544** |
+
+#### Mejor estrategia: 1 caja (104 sobres, Q 975) + 2 sobres sueltos (Q 19) = Q 994
+
+La caja ahorra Q 13 frente a 104 sueltos. Esos Q 13 más Q 2.50 de vuelto de la estrategia de sueltos puros financian **2 sobres extra** (total: 106 sobres), logrando la mayor probabilidad de completar el álbum con **+0.56 p.p.** sobre solo sueltos, ahorrando además Q 3.50.
+
+---
+
+## 🔄 Etapa 4 — Efecto del intercambio de repetidas (Lab 8)
+
+En la Etapa 4 se introduce un mecanismo de intercambio: cada $K$ estampas repetidas se pueden canjear por 1 estampa nueva (a elegir entre las que faltan). Se exploran los valores de $K \in \{1, 2, 5, 10\}$.
+
+### 📊 Parte A: Simulación hasta completar el álbum
+
+| Configuración | Media de Sobres | Desviación Estándar | Reducción vs. Sin Intercambio |
+| :--- | :---: | :---: | :---: |
+| **Sin intercambio** | ~72.25 sobres | 17.47 | - |
+| **K = 10** | ~35.15 sobres | 2.45 | **51.35%** |
+| **K = 5** | ~28.11 sobres | 1.44 | **61.09%** |
+| **K = 2** | ~19.85 sobres | 0.54 | **72.53%** |
+| **K = 1** | ~15.00 sobres | 0.00 | **79.24%** |
+
+> [!NOTE]
+> La disminución de K reduce drásticamente el número medio de sobres necesarios. La mejora no es lineal: pasar de $K=10$ a $K=5$ ofrece una mejora importante, pero los saltos hacia $K=2$ y $K=1$ presentan ganancias masivas.
+
+### Gráfica Distribución de sobres necesarios para completar el álbum (`hist_intercambio.png`)
+
+<img width="1500" height="900" alt="image" src="https://github.com/user-attachments/assets/91f08ac7-d203-4014-a95b-89c28cb72813" />
+
+### 📈 Parte B: Probabilidad en función de M sobres
+
+Se evaluaron secuencias fijas de $M$ sobres ($20, 25, 30, \dots, 70$) para determinar los puntos donde se alcanzan ciertas probabilidades clave:
+
+| Configuración | Sobres para 50% | Sobres para 75% | Sobres para 90% |
+| :--- | :---: | :---: | :---: |
+| **Sin intercambio** | 70 | >70 | >70 |
+| **K = 10** | 35 | 40 | 40 |
+| **K = 5** | 30 | 30 | 30 |
+| **K = 2** | 20 | 20 | 20 |
+| **K = 1** | 20 | 20 | 20 |
+
+### Gráfica Probabilidad de completar el álbum vs sobres comprados (`prob_vs_M_intercambio.png`)
+<img width="1500" height="900" alt="image" src="https://github.com/user-attachments/assets/e61878c0-1400-4346-b87a-3f5a1e6e3e0d" />
+
+---
+
+## 🔍 Análisis Profundo (Etapa 4)
+
+### 1. Ahorro monetario (K = 2)
+Para $K = 2$, se ahorran en promedio **52.40 sobres** respecto al caso sin intercambio. Multiplicando por Q 9.50/sobre, esto representa un ahorro monetario sustancial de **Q 497.80**.
+
+### 2. Rendimientos Decrecientes
+Valores de $K$ más altos (por ejemplo, mayores a 10) ofrecen beneficios marginales muy reducidos. Con tasas exigentes, la mayoría de figuritas repetidas nunca alcanzan el umbral para canjearse y el efecto sobre la distribución se diluye fuertemente.
+
+### 3. Costo Efectivo del Canje
+Aunque las repetidas provienen de sobres ya pagados (costo hundido), su "costo de oportunidad" (inversión indirecta por cada estampa canjeada) es de $K \cdot (9.50 / 7)$ Quetzales. 
+Por ejemplo, para $K = 2$ es de Q 2.71, y para $K = 10$ es de Q 13.57. $K = 1$ es la tasa más rentable pues transforma cada repetida inútil directamente en una estampa útil.
+
+---
+
 ## 🚀 Cómo Ejecutar el Proyecto
 
 ### Clonar el repositorio
 ```bash
-git clone https://github.com/jsam1904/Laboratorio-7-Probs.git
+git clone https://github.com/hmndzzl/Laboratorio-8-Probs.git
 ```
 ### Ir a la carpeta
 
 ```bash
-cd Laboratorio-7-Probs
+cd Laboratorio-8-Probs
 ```
 
 ### Requisitos Previos
@@ -122,15 +248,32 @@ Asegúrate de tener instalado Python y las bibliotecas necesarias:
 pip install numpy matplotlib
 ```
 
-### Opción 1: Ejecutar el Script interactivo (Jupyter Notebook)
-Abre el notebook para visualizar de forma interactiva la ejecución celda por celda y la generación dinámica de gráficos:
+### Lab 7 — Etapas 1 y 2
+
+#### Lab 7 · Jupyter Notebook (interactivo)
+
 ```bash
-jupyter notebook lab7.ipynb
+jupyter notebook "Lab 7/lab7.ipynb"
 ```
 
-### Opción 2: Ejecutar el Script de Consola (Python)
-Para realizar la simulación y guardar las gráficas en formato `.png` de forma directa, ejecuta el archivo de Python:
+#### Lab 7 · Script de consola
+
 ```bash
-python lab7.py
+python "Lab 7/lab7.py"
 ```
-El script imprimirá el análisis detallado y las respuestas a las preguntas directamente en la consola, y actualizará las imágenes en el directorio de trabajo.
+
+### Lab 8 — Etapas 3 y 4
+
+#### Lab 8 · Jupyter Notebook (interactivo)
+
+```bash
+jupyter notebook "Lab 8/lab8.ipynb"
+```
+
+#### Lab 8 · Script de consola
+
+```bash
+python "Lab 8/lab8.py"
+```
+
+El script imprimirá el análisis detallado y las respuestas a las preguntas directamente en la consola, y guardará los gráficos correspondientes (`proporcion_completar_budget.png`, `hist_intercambio.png`, `prob_vs_M_intercambio.png`) en el directorio de trabajo.
